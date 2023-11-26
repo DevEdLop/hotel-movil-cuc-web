@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 
 class BookNow extends StatefulWidget {
   const BookNow({Key? key}) : super(key: key);
@@ -11,21 +9,9 @@ class BookNow extends StatefulWidget {
 
 class _BookNowState extends State<BookNow> {
   bool isChecked = false;
-  XFile? _image;
   DateTime? selectedDate;
   DateTime? selectedDateini;
   int numberOfNights = 1;
-
-  Future<void> _getImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-
-    if (image != null) {
-      setState(() {
-        _image = image;
-      });
-    }
-  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -106,33 +92,6 @@ class _BookNowState extends State<BookNow> {
                   hintText: "Enter booking number",
                 ),
               ),
-              const SizedBox(
-                height: 20,
-              ),
-              const Text(
-                "Image:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              ElevatedButton(
-                onPressed: _getImage,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                  child: Text("Select"),
-                ),
-              ),
-              if (_image != null)
-                Image.file(
-                  File(_image!.path),
-                  height: 150,
-                ),
               const SizedBox(
                 height: 20,
               ),
@@ -225,7 +184,7 @@ class _BookNowState extends State<BookNow> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/create_rooms');
+                        Navigator.pushNamed(context, '/editar_books');
                       },
                       child: const Center(
                         child: Text(

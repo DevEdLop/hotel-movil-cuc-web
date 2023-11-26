@@ -49,27 +49,78 @@ class _ListRoomsState extends State<ListRooms> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Listado de Habitaciones'),
-      ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  filteredHabitaciones = habitaciones
-                      .where((habitacion) => habitacion.title
-                          .toLowerCase()
-                          .contains(value.toLowerCase()))
-                      .toList();
-                });
-              },
-              decoration: InputDecoration(
-                labelText: 'Buscar habitación por título',
-                prefixIcon: Icon(Icons.search),
+            padding: const EdgeInsets.only(top: 22, left: 05, right: 10),
+            child: Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                    elevation: 0,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                    size: 35,
+                  ),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                const Text(
+                  "Listado de Habitaciones",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 05, right: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/create_rooms');
+                  },
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Agregar',
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 05, right: 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                color: const Color.fromARGB(255, 255, 255, 255),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  setState(() {
+                    filteredHabitaciones = habitaciones
+                        .where((habitacion) => habitacion.title
+                            .toLowerCase()
+                            .contains(value.toLowerCase()))
+                        .toList();
+                  });
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Buscar habitación por título',
+                  icon: Icon(Icons.search, color: Colors.grey),
+                  border: InputBorder.none,
+                ),
               ),
             ),
           ),
@@ -162,12 +213,18 @@ class RoomCard extends StatelessWidget {
 class DetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Obtén los argumentos pasados desde la pantalla de la lista
     final Room room = ModalRoute.of(context)!.settings.arguments as Room;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(room.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.pushNamed(context, '/editar_rooms', arguments: room);
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),

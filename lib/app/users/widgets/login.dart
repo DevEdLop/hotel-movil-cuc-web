@@ -103,7 +103,7 @@ class _LoginState extends State<Login> {
                           ),
                           child: TextButton(
                             onPressed: () {
-                              Navigator.pushNamed(context, '/rooms');
+                              Navigator.pushNamed(context, '/list_rooms');
                             },
                             child: const Center(
                               child: Text(
