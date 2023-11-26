@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hotel_movil_cuc/app/users/widgets/list_users.dart';
 import 'package:hotel_movil_cuc/app/users/widgets/login.dart';
 import 'package:hotel_movil_cuc/app/users/widgets/register.dart';
 import 'package:hotel_movil_cuc/app/rooms/widgets/CreateRooms.dart';
 import 'package:hotel_movil_cuc/app/bookings/widgets/createBook.dart';
+import 'package:hotel_movil_cuc/app/rooms/widgets/list_rooms.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,8 +25,10 @@ class MyApp extends StatelessWidget {
       initialRoute: "/",
       routes: {
         "/": (context) => const Login(),
+        "/rooms": (context) => const ListRooms(),
         "/create_book": (context) => const BookNow(),
         "/create_rooms": (context) => const CreateRooms(),
+        "/detail": (context) => DetailScreen(),
         "/Register": (context) => const Register(),
       },
     );
