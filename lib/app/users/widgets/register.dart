@@ -141,7 +141,7 @@ class _RegisterState extends State<Register> {
                           child: TextButton(
                             onPressed: () {
                               // Navegar a la ruta "CreateBook"
-                              Navigator.pushNamed(context, '/create_book');
+                              Navigator.pushNamed(context, '/create_book_adm');
                             },
                             child: const Center(
                               child: Text(

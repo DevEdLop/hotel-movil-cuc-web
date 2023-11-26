@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class ListRooms extends StatefulWidget {
-  const ListRooms({Key? key}) : super(key: key);
+class ListRooms_usu extends StatefulWidget {
+  const ListRooms_usu({Key? key}) : super(key: key);
 
   @override
-  State<ListRooms> createState() => _ListRoomsState();
+  State<ListRooms_usu> createState() => _ListRooms_usuState();
 }
 
-class _ListRoomsState extends State<ListRooms> {
+class _ListRooms_usuState extends State<ListRooms_usu> {
   final List<Room> habitaciones = [
     Room(
       title: 'Suite de Lujo',
@@ -75,24 +75,6 @@ class _ListRoomsState extends State<ListRooms> {
                 const Text(
                   "Listado de Habitaciones",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 05, right: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/create_rooms_adm');
-                  },
-                  icon: const Icon(Icons.add),
-                  tooltip: 'Agregar',
-                ),
-                const SizedBox(
-                  width: 10,
                 ),
               ],
             ),
@@ -167,7 +149,7 @@ class RoomCard extends StatelessWidget {
       margin: const EdgeInsets.all(20.0),
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, '/detail', arguments: room);
+          Navigator.pushNamed(context, '/detail_user', arguments: room);
         },
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -209,25 +191,13 @@ class RoomCard extends StatelessWidget {
   }
 }
 
-class DetailScreen extends StatelessWidget {
+class DetailScreen_user extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Room room = ModalRoute.of(context)!.settings.arguments as Room;
     return Scaffold(
       appBar: AppBar(
         title: Text(room.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.pushNamed(context, '/editar_rooms', arguments: room);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),

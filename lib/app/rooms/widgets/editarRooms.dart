@@ -193,7 +193,7 @@ class _EditarRoomsState extends State<EditarRooms> {
                             ),
                             child: TextButton(
                               onPressed: () {
-                                Navigator.pushNamed(context, '/list_rooms');
+                                Navigator.pushNamed(context, '/list_rooms_adm');
                               },
                               child: const Center(
                                 child: Text(
