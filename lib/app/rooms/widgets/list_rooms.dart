@@ -10,30 +10,36 @@ class ListRooms extends StatefulWidget {
 class _ListRoomsState extends State<ListRooms> {
   final List<Room> habitaciones = [
     Room(
-      title: 'Suite de Lujo',
-      description: 'Una suite elegante con vistas impresionantes.',
-      rating: '5 estrellas',
-    ),
+        title: 'Suite de Lujo',
+        description: 'Una suite elegante con vistas impresionantes.',
+        rating: '5 estrellas',
+        urlImage:
+            'https://st3.idealista.com/news/archivos/styles/fullwidth_xl/public/2018-08/suite-princesse-grace-3.jpg?VersionId=4GORgqRZX0hbzXsr3j7zn8Dn580DRqLn&itok=hoDo8M8x'),
     Room(
-      title: 'Habitación Familiar',
-      description: 'Perfecta para una estancia en familia.',
-      rating: '4 estrellas',
-    ),
+        title: 'Habitación Familiar',
+        description: 'Perfecta para una estancia en familia.',
+        rating: '4 estrellas',
+        urlImage:
+            'https://media.istockphoto.com/id/1209743499/es/foto/sonrisa-padres-e-hija-con-batas-blancas-pasando-la-ma%C3%B1ana-juntos-pap%C3%A1-y-el-ni%C3%B1o-est%C3%A1n-posando.jpg?s=612x612&w=0&k=20&c=-LWLKlw3C3ZEFW3vXvMH3PiYcmSjzqHTsVoZU3RLypg='),
     Room(
-      title: 'Habitación Temática',
-      description: 'Una experiencia única con decoración temática.',
-      rating: '4.5 estrellas',
-    ),
+        title: 'Habitación Temática',
+        description: 'Una experiencia única con decoración temática.',
+        rating: '4.5 estrellas',
+        urlImage:
+            'https://i.pinimg.com/736x/0b/57/cd/0b57cd8a9885c14cac1cf714e2771658.jpg'),
     Room(
-      title: 'Habitación Ejecutiva',
-      description: 'Ideal para viajes de negocios con comodidades ejecutivas.',
-      rating: '4 estrellas',
-    ),
+        title: 'Habitación Ejecutiva',
+        description:
+            'Ideal para viajes de negocios con comodidades ejecutivas.',
+        rating: '4 estrellas',
+        urlImage:
+            'https://www.windsortower.com/wp-content/uploads/2015/04/DSC_7859.jpg'),
     Room(
-      title: 'Suite Presidencial',
-      description: 'La mejor habitación con servicios exclusivos.',
-      rating: '5 estrellas',
-    ),
+        title: 'Suite Presidencial',
+        description: 'La mejor habitación con servicios exclusivos.',
+        rating: '5 estrellas',
+        urlImage:
+            'https://s3.amazonaws.com/static-webstudio-accorhotels-usa-1.wp-ha.fastbooking.com/wp-content/uploads/sites/19/2022/01/06233739/DUF_7039-v-ok-1170x780.jpg'),
   ];
 
   late TextEditingController _searchController;
@@ -144,11 +150,13 @@ class Room {
   final String title;
   final String description;
   final String rating;
+  final String urlImage;
 
   Room({
     required this.title,
     required this.description,
     required this.rating,
+    required this.urlImage,
   });
 }
 
@@ -174,17 +182,17 @@ class RoomCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Hero(
-                tag: 'roomTitle${room.title}',
-                child: Text(
-                  room.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24.0,
-                  ),
-                  textAlign: TextAlign.center,
+              Text(
+                room.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24.0,
                 ),
+                textAlign: TextAlign.center,
               ),
+              Hero(
+                  tag: 'roomUrlImage${room.urlImage}',
+                  child: Image.network(room.urlImage)),
               const SizedBox(height: 10.0),
               Text(
                 room.description,
@@ -235,16 +243,8 @@ class DetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Hero(
-              tag: 'roomTitle${room.title}',
-              child: Text(
-                room.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24.0,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+                tag: 'roomTitle${room.title}',
+                child: Image.network(room.urlImage)),
             const SizedBox(height: 10.0),
             Text(
               room.description,
