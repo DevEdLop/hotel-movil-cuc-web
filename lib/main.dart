@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Hotel movil CUC',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
@@ -35,8 +35,8 @@ class MyApp extends StatelessWidget {
         "/editar_books": (context) => const EditarBook(),
         "/create_rooms_adm": (context) => const CreateRooms(),
         "/editar_rooms": (context) => const EditarRooms(),
-        "/detail": (context) => DetailScreen(),
-        "/detail_user": (context) => DetailScreen_user(),
+        "/detail": (context) => const DetailScreen(),
+        "/detail_user": (context) => const DetailScreen_user(),
         "/Register": (context) => const Register(),
       },
     );

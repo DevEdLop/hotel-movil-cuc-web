@@ -21,6 +21,7 @@ class _ListUsersState extends State<ListUsers> {
   }
 
   Future<void> fetchData() async {
+    print("${Config.API_BASE}/users");
     final response = await http.get(Uri.parse("${Config.API_BASE}/users"));
     print(response.statusCode);
     if (response.statusCode == 200) {

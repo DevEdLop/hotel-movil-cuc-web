@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:hotel_movil_cuc/config/config.dart';
+import 'package:http/http.dart' as http;
 import 'dart:io';
 
 class CreateRooms extends StatefulWidget {
@@ -10,6 +12,89 @@ class CreateRooms extends StatefulWidget {
 }
 
 class _CreateRoomsState extends State<CreateRooms> {
+  final TextEditingController _roomNumberController = TextEditingController();
+  final TextEditingController _imageRoomController = TextEditingController();
+  final TextEditingController _descriptionRoomController =
+      TextEditingController();
+  final TextEditingController _typeRoomController = TextEditingController();
+  final TextEditingController _capacityRoomController = TextEditingController();
+  final TextEditingController _priceRoomController = TextEditingController();
+
+  Future<void> addRoom() async {
+    String roomNumber = _roomNumberController.text.trim();
+    String imageRoom = _imageRoomController.text.trim();
+    String descriptionRoom = _descriptionRoomController.text.trim();
+    String typeRoom = _typeRoomController.text.trim();
+    String capacityRoom = _capacityRoomController.text.trim();
+    String priceRoom = _priceRoomController.text.trim();
+
+    final Map<String, String> headers = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    };
+
+    print("${Config.API_BASE}/rooms/create_room");
+    final url = Uri.parse("${Config.API_BASE}/rooms/create_room");
+    print('GG => room creada');
+    final body = {
+      'room_number': roomNumber,
+      'room_type': typeRoom,
+      'room_description': descriptionRoom,
+      'capacity': capacityRoom,
+      'price': priceRoom,
+      'is_available': "true"
+    };
+    print('=>> body');
+    print(body);
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: body,
+    );
+    print(response.statusCode);
+
+    if (roomNumber.isEmpty ||
+        typeRoom.isEmpty ||
+        descriptionRoom.isEmpty ||
+        capacityRoom.isEmpty ||
+        priceRoom.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Datos sin diligenciar'),
+          content: const Text('todos los campos son obligatorios'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else if (response.statusCode == 201) {
+      print('call me negra');
+      print(response.statusCode == 201);
+      Navigator.pushNamed(context, '/list_rooms_adm');
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error servidor'),
+          content: const Text('comuniquese con el administrador'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   XFile? _image;
   Future<void> _getImage() async {
     final ImagePicker _picker = ImagePicker();
@@ -86,6 +171,7 @@ class _CreateRoomsState extends State<CreateRooms> {
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       TextFormField(
+                        controller: _roomNumberController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter Room number",
@@ -123,9 +209,10 @@ class _CreateRoomsState extends State<CreateRooms> {
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      const TextField(
+                      TextField(
+                        controller: _descriptionRoomController,
                         maxLines: 5,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter room description",
                         ),
@@ -136,6 +223,7 @@ class _CreateRoomsState extends State<CreateRooms> {
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       TextFormField(
+                        controller: _typeRoomController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter Room type",
@@ -147,6 +235,7 @@ class _CreateRoomsState extends State<CreateRooms> {
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       TextFormField(
+                        controller: _capacityRoomController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter capacity",
@@ -158,6 +247,7 @@ class _CreateRoomsState extends State<CreateRooms> {
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       TextFormField(
+                        controller: _priceRoomController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter Price",
@@ -180,11 +270,11 @@ class _CreateRoomsState extends State<CreateRooms> {
                             ),
                             child: TextButton(
                               onPressed: () {
-                                Navigator.pushNamed(context, '/list_rooms_adm');
+                                addRoom();
                               },
                               child: const Center(
                                 child: Text(
-                                  "Book Now",
+                                  "Room Now",
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 20,

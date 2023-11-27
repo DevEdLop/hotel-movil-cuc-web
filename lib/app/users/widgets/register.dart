@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hotel_movil_cuc/config/config.dart';
+import 'package:http/http.dart' as http;
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -8,6 +10,86 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+
+  Future<void> register() async {
+    String username = _usernameController.text.trim();
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+    String firstName = _firstNameController.text.trim();
+    String lastName = _lastNameController.text.trim();
+
+    final Map<String, String> headers = {
+      'authorization': Config.API_BASE,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    };
+
+    print("${Config.API_BASE}/users/register");
+    final url = Uri.parse("${Config.API_BASE}/users/register");
+    print('GG => register');
+    final body = {
+      'username': username,
+      'email': email,
+      'password': password,
+      'first_name': firstName,
+      'last_name': lastName
+    };
+    print('=>> body');
+    print(body);
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: body,
+    );
+    print(response.statusCode);
+
+    if (email.isEmpty ||
+        password.isEmpty ||
+        username.isEmpty ||
+        firstName.isEmpty ||
+        lastName.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Datos sin diligenciar'),
+          content: const Text('todos los campos son obligatorios'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else if (response.statusCode == 201) {
+      print('call me negra');
+      print(response.statusCode == 201);
+      Navigator.pushNamed(context, '/');
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error servidor'),
+          content: const Text('comuniquese con el administrador'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,8 +130,9 @@ class _RegisterState extends State<Register> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      const TextField(
-                        decoration: InputDecoration(
+                      TextField(
+                        controller: _usernameController,
+                        decoration: const InputDecoration(
                             suffixIcon: Icon(
                               Icons.abc,
                             ),
@@ -60,8 +143,9 @@ class _RegisterState extends State<Register> {
                                   color: Colors.blue),
                             )),
                       ),
-                      const TextField(
-                        decoration: InputDecoration(
+                      TextField(
+                        controller: _passwordController,
+                        decoration: const InputDecoration(
                             suffixIcon: Icon(
                               Icons.visibility_off,
                             ),
@@ -72,8 +156,9 @@ class _RegisterState extends State<Register> {
                                   color: Colors.blue),
                             )),
                       ),
-                      const TextField(
-                        decoration: InputDecoration(
+                      TextField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
                             suffixIcon: Icon(
                               Icons.attach_email_outlined,
                             ),
@@ -84,8 +169,9 @@ class _RegisterState extends State<Register> {
                                   color: Colors.blue),
                             )),
                       ),
-                      const TextField(
-                        decoration: InputDecoration(
+                      TextField(
+                        controller: _firstNameController,
+                        decoration: const InputDecoration(
                             suffixIcon: Icon(
                               Icons.abc,
                             ),
@@ -96,8 +182,9 @@ class _RegisterState extends State<Register> {
                                   color: Colors.blue),
                             )),
                       ),
-                      const TextField(
-                        decoration: InputDecoration(
+                      TextField(
+                        controller: _lastNameController,
+                        decoration: const InputDecoration(
                             suffixIcon: Icon(
                               Icons.abc,
                             ),
@@ -112,7 +199,7 @@ class _RegisterState extends State<Register> {
                         padding: const EdgeInsets.only(top: 30),
                         child: GestureDetector(
                           onTap: () {
-                            // Navegar a la ruta "register" cuando se toque "Create Account"
+                            // Navegar a la ruta "login" cuando se toque "Create Account"
                             Navigator.pushNamed(context, '/');
                           },
                           child: const Align(
@@ -140,8 +227,7 @@ class _RegisterState extends State<Register> {
                           ),
                           child: TextButton(
                             onPressed: () {
-                              // Navegar a la ruta "CreateBook"
-                              Navigator.pushNamed(context, '/create_book_adm');
+                              register();
                             },
                             child: const Center(
                               child: Text(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hotel_movil_cuc/config/config.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 
 class EditarRooms extends StatefulWidget {
   const EditarRooms({Key? key}) : super(key: key);
@@ -10,6 +12,26 @@ class EditarRooms extends StatefulWidget {
 }
 
 class _EditarRoomsState extends State<EditarRooms> {
+  TextEditingController roomNumberController = TextEditingController();
+  TextEditingController imageRoomController = TextEditingController();
+  TextEditingController descriptionRoomController = TextEditingController();
+  TextEditingController typeRoomController = TextEditingController();
+  TextEditingController capacityRoomController = TextEditingController();
+  TextEditingController priceRoomController = TextEditingController();
+
+  String idRoom = "";
+  void cargarInfo(String roomNumber, String description, String type,
+      String capacity, String precio, String id) {
+    setState(() {
+      roomNumberController.text = roomNumber;
+      descriptionRoomController.text = description;
+      typeRoomController.text = type;
+      capacityRoomController.text = capacity;
+      priceRoomController.text = precio;
+      idRoom = id;
+    });
+  }
+
   XFile? _image;
 
   Future<void> _getImage() async {
@@ -23,8 +45,83 @@ class _EditarRoomsState extends State<EditarRooms> {
     }
   }
 
+  Future<void> editRoom() async {
+    String roomNumber = roomNumberController.text.trim();
+    String imageRoom = imageRoomController.text.trim();
+    String descriptionRoom = descriptionRoomController.text.trim();
+    String typeRoom = typeRoomController.text.trim();
+    String capacityRoom = capacityRoomController.text.trim();
+    String priceRoom = priceRoomController.text.trim();
+
+    final Map<String, String> headers = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    };
+
+    print("${Config.API_BASE}/rooms/update_room/${idRoom}");
+    final url = Uri.parse("${Config.API_BASE}/rooms/update_room/${idRoom}");
+    print('GG => room editada');
+    final body = {
+      'room_number': roomNumber,
+      'room_type': typeRoom,
+      'room_description': descriptionRoom,
+      'capacity': capacityRoom,
+      'price': priceRoom,
+    };
+    print('=>> body');
+    print(body);
+    final response = await http.put(
+      url,
+      headers: headers,
+      body: body,
+    );
+    print(response.statusCode);
+
+    if (roomNumber.isEmpty ||
+        typeRoom.isEmpty ||
+        descriptionRoom.isEmpty ||
+        capacityRoom.isEmpty ||
+        priceRoom.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Datos sin diligenciar'),
+          content: const Text('todos los campos son obligatorios'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else if (response.statusCode == 200) {
+      Navigator.pushNamed(context, '/list_rooms_adm');
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error servidor'),
+          content: const Text('comuniquese con el administrador'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    Map arg = ModalRoute.of(context)?.settings.arguments as Map;
+    cargarInfo(arg["roomNumber"], arg["description"], arg["type"],
+        arg["capacity"], arg["precio"], arg["id"]);
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
@@ -89,7 +186,8 @@ class _EditarRoomsState extends State<EditarRooms> {
                         ),
                       ),
                       TextFormField(
-                        initialValue: "101", // Coloca el valor actual aquí
+                        controller:
+                            roomNumberController, // Coloca el valor actual aquí
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
@@ -130,9 +228,10 @@ class _EditarRoomsState extends State<EditarRooms> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const TextField(
+                      TextField(
+                        controller: descriptionRoomController,
                         maxLines: 5,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter room description",
                         ),
@@ -145,7 +244,7 @@ class _EditarRoomsState extends State<EditarRooms> {
                         ),
                       ),
                       TextFormField(
-                        initialValue: "Single", // Coloca el tipo actual aquí
+                        controller: typeRoomController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
@@ -158,7 +257,7 @@ class _EditarRoomsState extends State<EditarRooms> {
                         ),
                       ),
                       TextFormField(
-                        initialValue: "1", // Coloca la capacidad actual aquí
+                        controller: capacityRoomController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
@@ -171,7 +270,7 @@ class _EditarRoomsState extends State<EditarRooms> {
                         ),
                       ),
                       TextFormField(
-                        initialValue: "100", // Coloca el precio actual aquí
+                        controller: priceRoomController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
@@ -193,7 +292,7 @@ class _EditarRoomsState extends State<EditarRooms> {
                             ),
                             child: TextButton(
                               onPressed: () {
-                                Navigator.pushNamed(context, '/list_rooms_adm');
+                                editRoom();
                               },
                               child: const Center(
                                 child: Text(
