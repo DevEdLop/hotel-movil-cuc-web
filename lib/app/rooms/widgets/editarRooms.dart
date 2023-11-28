@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hotel_movil_cuc/config/config.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'dart:io';
 
 class EditarRooms extends StatefulWidget {
   const EditarRooms({Key? key}) : super(key: key);
@@ -12,7 +13,6 @@ class EditarRooms extends StatefulWidget {
 }
 
 class _EditarRoomsState extends State<EditarRooms> {
-  TextEditingController roomNumberController = TextEditingController();
   TextEditingController imageRoomController = TextEditingController();
   TextEditingController descriptionRoomController = TextEditingController();
   TextEditingController typeRoomController = TextEditingController();
@@ -20,10 +20,9 @@ class _EditarRoomsState extends State<EditarRooms> {
   TextEditingController priceRoomController = TextEditingController();
 
   String idRoom = "";
-  void cargarInfo(String roomNumber, String description, String type,
-      String capacity, String precio, String id) {
+  void cargarInfo(String description, String type, String capacity,
+      String precio, String id) {
     setState(() {
-      roomNumberController.text = roomNumber;
       descriptionRoomController.text = description;
       typeRoomController.text = type;
       capacityRoomController.text = capacity;
@@ -46,22 +45,16 @@ class _EditarRoomsState extends State<EditarRooms> {
   }
 
   Future<void> editRoom() async {
-    String roomNumber = roomNumberController.text.trim();
     String imageRoom = imageRoomController.text.trim();
     String descriptionRoom = descriptionRoomController.text.trim();
     String typeRoom = typeRoomController.text.trim();
     String capacityRoom = capacityRoomController.text.trim();
     String priceRoom = priceRoomController.text.trim();
 
-    final Map<String, String> headers = {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    };
-
     print("${Config.API_BASE}/rooms/update_room/${idRoom}");
     final url = Uri.parse("${Config.API_BASE}/rooms/update_room/${idRoom}");
     print('GG => room editada');
     final body = {
-      'room_number': roomNumber,
       'room_type': typeRoom,
       'room_description': descriptionRoom,
       'capacity': capacityRoom,
@@ -71,13 +64,11 @@ class _EditarRoomsState extends State<EditarRooms> {
     print(body);
     final response = await http.put(
       url,
-      headers: headers,
       body: body,
     );
     print(response.statusCode);
 
-    if (roomNumber.isEmpty ||
-        typeRoom.isEmpty ||
+    if (typeRoom.isEmpty ||
         descriptionRoom.isEmpty ||
         capacityRoom.isEmpty ||
         priceRoom.isEmpty) {
@@ -120,8 +111,8 @@ class _EditarRoomsState extends State<EditarRooms> {
   @override
   Widget build(BuildContext context) {
     Map arg = ModalRoute.of(context)?.settings.arguments as Map;
-    cargarInfo(arg["roomNumber"], arg["description"], arg["type"],
-        arg["capacity"], arg["precio"], arg["id"]);
+    cargarInfo(arg["description"], arg["type"], arg["capacity"], arg["precio"],
+        arg["id"]);
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
@@ -177,22 +168,7 @@ class _EditarRoomsState extends State<EditarRooms> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 30),
-                      const Text(
-                        "Room number:",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextFormField(
-                        controller:
-                            roomNumberController, // Coloca el valor actual aquí
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const Text(
+                      /*  const Text(
                         "Image:",
                         style: TextStyle(
                           fontSize: 16,
@@ -220,7 +196,7 @@ class _EditarRoomsState extends State<EditarRooms> {
                           File(_image!.path),
                           height: 150,
                         ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 10), */
                       const Text(
                         "Room description:",
                         style: TextStyle(
@@ -258,8 +234,13 @@ class _EditarRoomsState extends State<EditarRooms> {
                       ),
                       TextFormField(
                         controller: capacityRoomController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
+                          hintText: "Enter capacity",
                         ),
                       ),
                       const Text(
@@ -271,8 +252,13 @@ class _EditarRoomsState extends State<EditarRooms> {
                       ),
                       TextFormField(
                         controller: priceRoomController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
+                          hintText: "Enter Price",
                         ),
                       ),
                       Center(

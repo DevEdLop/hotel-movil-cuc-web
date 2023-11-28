@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:hotel_movil_cuc/config/config.dart';
 import 'package:http/http.dart' as http;
@@ -12,7 +13,6 @@ class CreateRooms extends StatefulWidget {
 }
 
 class _CreateRoomsState extends State<CreateRooms> {
-  final TextEditingController _roomNumberController = TextEditingController();
   final TextEditingController _imageRoomController = TextEditingController();
   final TextEditingController _descriptionRoomController =
       TextEditingController();
@@ -21,22 +21,16 @@ class _CreateRoomsState extends State<CreateRooms> {
   final TextEditingController _priceRoomController = TextEditingController();
 
   Future<void> addRoom() async {
-    String roomNumber = _roomNumberController.text.trim();
     String imageRoom = _imageRoomController.text.trim();
     String descriptionRoom = _descriptionRoomController.text.trim();
     String typeRoom = _typeRoomController.text.trim();
     String capacityRoom = _capacityRoomController.text.trim();
     String priceRoom = _priceRoomController.text.trim();
 
-    final Map<String, String> headers = {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    };
-
     print("${Config.API_BASE}/rooms/create_room");
     final url = Uri.parse("${Config.API_BASE}/rooms/create_room");
     print('GG => room creada');
     final body = {
-      'room_number': roomNumber,
       'room_type': typeRoom,
       'room_description': descriptionRoom,
       'capacity': capacityRoom,
@@ -47,13 +41,11 @@ class _CreateRoomsState extends State<CreateRooms> {
     print(body);
     final response = await http.post(
       url,
-      headers: headers,
       body: body,
     );
     print(response.statusCode);
 
-    if (roomNumber.isEmpty ||
-        typeRoom.isEmpty ||
+    if (typeRoom.isEmpty ||
         descriptionRoom.isEmpty ||
         capacityRoom.isEmpty ||
         priceRoom.isEmpty) {
@@ -164,20 +156,7 @@ class _CreateRoomsState extends State<CreateRooms> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 30),
-                      const Text(
-                        "Room number:",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      TextFormField(
-                        controller: _roomNumberController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: "Enter Room number",
-                        ),
-                      ),
-                      const Text(
+                      /*  const Text(
                         "Image:",
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
@@ -203,7 +182,7 @@ class _CreateRoomsState extends State<CreateRooms> {
                           File(_image!.path),
                           height: 150,
                         ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 10), */
                       const Text(
                         "Room description:",
                         style: TextStyle(
@@ -236,6 +215,10 @@ class _CreateRoomsState extends State<CreateRooms> {
                       ),
                       TextFormField(
                         controller: _capacityRoomController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter capacity",
@@ -248,6 +231,10 @@ class _CreateRoomsState extends State<CreateRooms> {
                       ),
                       TextFormField(
                         controller: _priceRoomController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter Price",

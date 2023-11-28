@@ -43,12 +43,24 @@ class RoomCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    room.typeRoom,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24.0,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        room.typeRoom,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24.0,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        "\u0024 ${room.priceRoom}",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24.0,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 10.0),
                   Text(

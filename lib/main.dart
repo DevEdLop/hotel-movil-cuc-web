@@ -7,9 +7,8 @@ import 'package:hotel_movil_cuc/app/rooms/widgets/editarRooms.dart';
 import 'package:hotel_movil_cuc/app/bookings/widgets/createBook.dart';
 import 'package:hotel_movil_cuc/app/bookings/widgets/editarBook.dart';
 import 'package:hotel_movil_cuc/app/rooms/widgets/list_rooms.dart';
-
 import 'package:hotel_movil_cuc/app/rooms/widgets/list_room_usur.dart';
-import 'package:hotel_movil_cuc/config/my_app_state.dart';
+import 'package:hotel_movil_cuc/config/myAppState.dart';
 import 'package:provider/provider.dart';
 
 void main() {

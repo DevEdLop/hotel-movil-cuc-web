@@ -1,4 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:hotel_movil_cuc/config/config.dart';
+import 'package:hotel_movil_cuc/config/myAppState.dart';
+import 'package:hotel_movil_cuc/models/bookings.dart';
+import 'package:provider/provider.dart';
+import 'package:hotel_movil_cuc/models/rooms.dart';
+import 'package:hotel_movil_cuc/models/users.dart';
+import 'package:intl/intl.dart';
+
+import 'package:http/http.dart' as http;
 
 class EditarBook extends StatefulWidget {
   const EditarBook({Key? key}) : super(key: key);
@@ -8,26 +18,51 @@ class EditarBook extends StatefulWidget {
 }
 
 class _EditarBookState extends State<EditarBook> {
+  Room? validateRoom;
+  Booking? selectedBooking;
+  User? currentUserLogin;
   DateTime? selectedDate;
   DateTime? selectedDateini;
-  int numberOfNights = 1;
+  double totalPrice = 0.0;
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
+  @override
+  void initState() {
+    super.initState();
+    getRooms();
   }
 
-  Future<void> _selectDateEntra(BuildContext context) async {
+  void cargarInfo(dynamic book) {
+    final currentUser = Provider.of<MyAppStateUser>(context).currentUser;
+    setState(() {
+      selectedBooking = book;
+      currentUserLogin = currentUser;
+    });
+  }
+
+  Future<void> getRooms() async {
+    final resp = await http.get(
+      Uri.parse("${Config.API_BASE}/rooms"),
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
+    );
+
+    final decodedBody = utf8.decode(resp.bodyBytes);
+    final items = json.decode(decodedBody).cast<Map<String, dynamic>>();
+
+    print('VALUE ROOOOOMS');
+    print(items);
+
+    List<Room> pd = items.map<Room>((json) {
+      return Room.fromJson(json);
+    }).toList();
+
+    validateRoom =
+        pd.firstWhere((room) => room.roomId == selectedBooking!.ROOM);
+    print(validateRoom!.typeRoom);
+
+    // setState(() {});
+  }
+
+  Future<void> _selectDateOut(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -35,26 +70,123 @@ class _EditarBookState extends State<EditarBook> {
       lastDate: DateTime(2101),
     );
 
-    if (picked != null && picked != selectedDateini) {
+    if (picked != null) {
       setState(() {
         selectedDateini = picked;
       });
     }
   }
 
+  Future<void> _selectDateIn(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  int calculateNights(DateTime checkIn, DateTime checkOut) {
+    final difference = checkOut.difference(checkIn);
+    return difference.inDays.abs();
+  }
+
+  String formatDate(DateTime date) {
+    final formatter = DateFormat('yyyy-MM-dd');
+    return formatter.format(date);
+  }
+
+  double calculateTotalPrice() {
+    if (selectedDate != null && selectedDateini != null) {
+      final numberOfNights = calculateNights(selectedDateini!, selectedDate!);
+      if (numberOfNights > 0) {
+        final double price = double.parse(validateRoom!.priceRoom);
+        totalPrice = numberOfNights * price;
+        return totalPrice;
+      }
+    }
+    return 0.0;
+  }
+
+  Future<void> editBook() async {
+    print("${Config.API_BASE}/bookings/update_booking/${selectedBooking!.ID}");
+    final url = Uri.parse(
+        "${Config.API_BASE}/bookings/update_booking/${selectedBooking!.ID}");
+
+    final body = {
+      'check_in_date': formatDate(selectedDate ?? DateTime.now()),
+      'check_out_date': formatDate(selectedDateini ?? DateTime.now()),
+      'number_of_nights':
+          calculateNights(selectedDateini!, selectedDate!).toString(),
+      'total_price': totalPrice.toString()
+    };
+    print('GG => book editada');
+    print(body);
+    final response = await http.put(
+      url,
+      body: body,
+    );
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      print('call me negra');
+      print(response.statusCode == 200);
+      Navigator.pushNamed(context, '/list_rooms_user');
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error servidor'),
+          content: const Text('comuniquese con el administrador'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> validateEditBooking() async {
+    if (selectedDateini == null || selectedDate == null) {
+      return showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Datos sin diligenciar'),
+          content: const Text('seleccione un rango de fecha'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      editBook();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    Booking? arg = ModalRoute.of(context)?.settings.arguments as Booking;
+    cargarInfo(arg);
+
     return Scaffold(
       body: ListView(
         children: [
           Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [
-              Color.fromARGB(255, 0, 140, 255),
-              Color.fromARGB(255, 54, 53, 53)
-            ])),
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,12 +201,12 @@ class _EditarBookState extends State<EditarBook> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
+                        backgroundColor: Color.fromARGB(255, 255, 255, 255),
                         elevation: 0,
                       ),
                       child: const Icon(
                         Icons.arrow_back,
-                        color: Color.fromARGB(255, 255, 255, 255),
+                        color: Color.fromARGB(255, 0, 0, 0),
                         size: 35,
                       ),
                     ),
@@ -82,40 +214,21 @@ class _EditarBookState extends State<EditarBook> {
                       width: 10,
                     ),
                     const Text(
-                      "Editar Book",
-                      style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                      "Edit Book",
+                      style:
+                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                     ),
                   ],
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  "Booking number:",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Enter booking number",
-                  ),
                 ),
                 const SizedBox(
                   height: 20,
                 ),
                 const Text(
                   "Check in date:",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 TextButton(
-                  onPressed: () => _selectDateEntra(context),
+                  onPressed: () => _selectDateIn(context),
                   child: InputDecorator(
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
@@ -137,13 +250,10 @@ class _EditarBookState extends State<EditarBook> {
                 const SizedBox(height: 20),
                 const Text(
                   "Check out date:",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 TextButton(
-                  onPressed: () => _selectDate(context),
+                  onPressed: () => _selectDateOut(context),
                   child: InputDecorator(
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
@@ -165,10 +275,7 @@ class _EditarBookState extends State<EditarBook> {
                 const SizedBox(height: 20),
                 const Text(
                   "Number of nights:",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 TextFormField(
                   enabled: false,
@@ -176,16 +283,18 @@ class _EditarBookState extends State<EditarBook> {
                     border: InputBorder.none,
                     hintText: "0",
                   ),
+                  controller: TextEditingController(
+                      text: (selectedDate != null && selectedDateini != null)
+                          ? calculateNights(selectedDateini!, selectedDate!)
+                              .toString()
+                          : '0'),
                 ),
                 const SizedBox(
                   height: 20,
                 ),
                 const Text(
                   "Total Price:",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 TextFormField(
                   enabled: false,
@@ -193,6 +302,8 @@ class _EditarBookState extends State<EditarBook> {
                     border: InputBorder.none,
                     hintText: "0",
                   ),
+                  controller: TextEditingController(
+                      text: calculateTotalPrice().toString()),
                 ),
                 Center(
                   child: Padding(
@@ -201,17 +312,23 @@ class _EditarBookState extends State<EditarBook> {
                       height: 50,
                       width: 300,
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Colors.white),
+                        borderRadius: BorderRadius.circular(30),
+                        gradient: const LinearGradient(
+                          colors: [
+                            Colors.blue,
+                            Color.fromARGB(255, 54, 53, 53)
+                          ],
+                        ),
+                      ),
                       child: TextButton(
                         onPressed: () {
-                          Navigator.pop(context);
+                          validateEditBooking();
                         },
                         child: const Center(
                           child: Text(
-                            "Guardar Cambios",
+                            "Save Changes",
                             style: TextStyle(
-                              color: Colors.blue,
+                              color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -220,7 +337,20 @@ class _EditarBookState extends State<EditarBook> {
                       ),
                     ),
                   ),
-                )
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Image.network(
+                  'https://st3.idealista.com/news/archivos/styles/fullwidth_xl/public/2018-08/suite-princesse-grace-3.jpg?VersionId=4GORgqRZX0hbzXsr3j7zn8Dn580DRqLn&itok=hoDo8M8x', // Reemplaza esto con la URL de la imagen del hotel
+                  width: double.infinity,
+                  height:
+                      200, // Ajusta la altura de la imagen según tus necesidades
+                  fit: BoxFit.cover,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
               ],
             ),
           ),

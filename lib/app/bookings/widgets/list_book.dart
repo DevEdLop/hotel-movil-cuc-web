@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'package:hotel_movil_cuc/config/myAppState.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:hotel_movil_cuc/models/bookings.dart';
 import 'package:hotel_movil_cuc/config/config.dart';
+import 'package:hotel_movil_cuc/models/users.dart';
 import 'package:http/http.dart' as http;
 
 class ListBookings extends StatefulWidget {
@@ -12,6 +15,7 @@ class ListBookings extends StatefulWidget {
 }
 
 class _ListBookingsState extends State<ListBookings> {
+  User? currentUserLogin;
   List<Booking> filteredReservas = [];
   late TextEditingController _searchController;
   final List<Booking> reservas = [];
@@ -23,7 +27,17 @@ class _ListBookingsState extends State<ListBookings> {
     _searchController = TextEditingController();
   }
 
-  Future<List<Booking>> getBookings() async {
+  void cargarInfo() {
+    final currentUser = Provider.of<MyAppStateUser>(context).currentUser;
+    if (currentUser != null) {
+      setState(() {
+        currentUserLogin = currentUser;
+        print(currentUserLogin!.username);
+      });
+    }
+  }
+
+  Future<void> getBookings() async {
     final resp = await http.get(Uri.parse("${Config.API_BASE}/bookings"));
     final items = json.decode(resp.body).cast<Map<String, dynamic>>();
 
@@ -34,10 +48,6 @@ class _ListBookingsState extends State<ListBookings> {
       reservas.addAll(pd);
       filteredReservas = reservas;
     });
-
-    print('GG ==>> bookings');
-    print(pd);
-    return pd;
   }
 
   Future<void> outApp() async {
@@ -75,6 +85,7 @@ class _ListBookingsState extends State<ListBookings> {
 
   @override
   Widget build(BuildContext context) {
+    cargarInfo();
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -119,7 +130,7 @@ class _ListBookingsState extends State<ListBookings> {
                 onChanged: (value) {
                   setState(() {
                     filteredReservas = reservas
-                        .where((reservas) => reservas.BOOKING_NUMBER
+                        .where((reservas) => reservas.ROOM
                             .toLowerCase()
                             .contains(value.toLowerCase()))
                         .toList();
@@ -147,6 +158,7 @@ class _ListBookingsState extends State<ListBookings> {
                     itemBuilder: (context, index) {
                       return BookingCard(
                         booking: filteredReservas[index],
+                        userName: currentUserLogin?.username ?? 'Guest',
                       );
                     },
                   ),
@@ -159,10 +171,12 @@ class _ListBookingsState extends State<ListBookings> {
 
 class BookingCard extends StatelessWidget {
   final Booking booking;
+  final String userName;
 
   const BookingCard({
     Key? key,
     required this.booking,
+    required this.userName,
   }) : super(key: key);
 
   @override
@@ -195,7 +209,7 @@ class BookingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Booking #${booking.BOOKING_NUMBER}',
+                    'Booking #${booking.ID}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18.0,
@@ -203,32 +217,32 @@ class BookingCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8.0),
                   Text(
-                    'Customer: ${booking.CUSTOMER}',
+                    'Cliente: ${userName}',
                     style: TextStyle(fontSize: 16.0),
                   ),
                   const SizedBox(height: 4.0),
                   Text(
-                    'Room: ${booking.ROOM}',
+                    'Habitacion: ${booking.ROOM}',
                     style: TextStyle(fontSize: 16.0),
                   ),
                   const SizedBox(height: 4.0),
                   Text(
-                    'Check-in Date: ${booking.CHECK_IN_DATE}',
+                    'Ingresa el: ${booking.CHECK_IN_DATE}',
                     style: TextStyle(fontSize: 16.0),
                   ),
                   const SizedBox(height: 4.0),
                   Text(
-                    'Check-out Date: ${booking.CHECK_OUT_DATE}',
+                    'Sale el: ${booking.CHECK_OUT_DATE}',
                     style: TextStyle(fontSize: 16.0),
                   ),
                   const SizedBox(height: 4.0),
                   Text(
-                    'Number of Nights: ${booking.NUMBER_OF_NIGHTS}',
+                    'Numero de noches: ${booking.NUMBER_OF_NIGHTS}',
                     style: TextStyle(fontSize: 16.0),
                   ),
                   const SizedBox(height: 4.0),
                   Text(
-                    'Total Price: \$${booking.TOTAL_PRICE}',
+                    'Total Precio: \$${booking.TOTAL_PRICE}',
                     style: TextStyle(
                       fontSize: 16.0,
                       fontWeight: FontWeight.bold,
@@ -253,14 +267,14 @@ class DetailScreen_user extends StatefulWidget {
 }
 
 class _DetailScreen_userState extends State<DetailScreen_user> {
-  Future<void> deleteRoom(String id) async {
+  Future<void> deleteBook(String id) async {
     final resp = await http
-        .delete(Uri.parse("${Config.API_BASE}/rooms/delete_room/${id}"));
+        .delete(Uri.parse("${Config.API_BASE}/bookings/delete_booking/${id}"));
 
-    print('GG ==>> room  delete');
+    print('GG ==>> book  delete');
     print(resp.statusCode);
     if (resp.statusCode == 204) {
-      Navigator.pushNamed(context, '/list_rooms_adm');
+      Navigator.pushNamed(context, '/list_bookings');
     } else {
       showDialog(
         context: context,
@@ -304,7 +318,7 @@ class _DetailScreen_userState extends State<DetailScreen_user> {
             TextButton(
               child: const Text('Eliminar'),
               onPressed: () {
-                deleteRoom(id);
+                deleteBook(id);
               },
             ),
           ],
@@ -319,19 +333,12 @@ class _DetailScreen_userState extends State<DetailScreen_user> {
         ModalRoute.of(context)!.settings.arguments as Booking;
     return Scaffold(
       appBar: AppBar(
-        title: Text(booking.TOTAL_PRICE),
+        title: Text("Booking # ${booking.ID}"),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              /*  Navigator.pushNamed(context, '/editar_rooms', arguments: {
-                "roomNumber": room.roomNumber,
-                "description": room.descriptionRoom,
-                "type": room.typeRoom,
-                "capacity": room.capacityRoom,
-                "precio": room.priceRoom,
-                "id": room.roomId,
-              }); */
+              Navigator.pushNamed(context, '/editar_books', arguments: booking);
             },
           ),
           IconButton(
@@ -347,18 +354,27 @@ class _DetailScreen_userState extends State<DetailScreen_user> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            /*  Hero(
-                tag: 'roomTitle${room.typeRoom}',
-                child: Image.network(room.imageRoom)),
+            Hero(
+              tag: 'roomID${booking.ID}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20.0),
+                child: Image.network(
+                  'https://st3.idealista.com/news/archivos/styles/fullwidth_xl/public/2018-08/suite-princesse-grace-3.jpg?VersionId=4GORgqRZX0hbzXsr3j7zn8Dn580DRqLn&itok=hoDo8M8x',
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
             const SizedBox(height: 10.0),
             Text(
-              room.descriptionRoom,
+              "Habitacion: ${booking.ROOM}",
               style: const TextStyle(fontSize: 16.0),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10.0),
             Text(
-              "capacidad: ${room.capacityRoom} persona(s)",
+              "Ingreso: ${booking.CHECK_IN_DATE}",
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18.0,
@@ -368,13 +384,13 @@ class _DetailScreen_userState extends State<DetailScreen_user> {
             ),
             const SizedBox(height: 10.0),
             Text(
-              "Precio por noche: ${room.priceRoom}",
+              "Salida: ${booking.CHECK_OUT_DATE}",
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 18.0,
               ),
               textAlign: TextAlign.center,
-            ), */
+            ),
           ],
         ),
       ),

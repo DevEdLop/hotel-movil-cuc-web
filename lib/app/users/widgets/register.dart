@@ -23,11 +23,6 @@ class _RegisterState extends State<Register> {
     String firstName = _firstNameController.text.trim();
     String lastName = _lastNameController.text.trim();
 
-    final Map<String, String> headers = {
-      'authorization': Config.API_BASE,
-      'Content-Type': 'application/x-www-form-urlencoded'
-    };
-
     print("${Config.API_BASE}/users/register");
     final url = Uri.parse("${Config.API_BASE}/users/register");
     print('GG => register');
@@ -42,7 +37,6 @@ class _RegisterState extends State<Register> {
     print(body);
     final response = await http.post(
       url,
-      headers: headers,
       body: body,
     );
     print(response.statusCode);

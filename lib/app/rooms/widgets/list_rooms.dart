@@ -25,8 +25,13 @@ class _ListRoomsState extends State<ListRooms> {
   }
 
   Future<List<Room>> getRooms() async {
-    final resp = await http.get(Uri.parse("${Config.API_BASE}/rooms"));
-    final items = json.decode(resp.body).cast<Map<String, dynamic>>();
+    final resp = await http.get(
+      Uri.parse("${Config.API_BASE}/rooms"),
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
+    );
+
+    final decodedBody = utf8.decode(resp.bodyBytes);
+    final items = json.decode(decodedBody).cast<Map<String, dynamic>>();
 
     List<Room> pd = items.map<Room>((json) {
       return Room.fromJson(json);
@@ -246,7 +251,6 @@ class _DetailScreenState extends State<DetailScreen> {
             icon: const Icon(Icons.edit),
             onPressed: () {
               Navigator.pushNamed(context, '/editar_rooms', arguments: {
-                "roomNumber": room.roomNumber,
                 "description": room.descriptionRoom,
                 "type": room.typeRoom,
                 "capacity": room.capacityRoom,

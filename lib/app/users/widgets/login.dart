@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:hotel_movil_cuc/config/config.dart';
-import 'package:hotel_movil_cuc/config/my_app_state.dart';
+import 'package:hotel_movil_cuc/config/myAppState.dart';
 import 'package:hotel_movil_cuc/models/users.dart';
 import 'package:http/http.dart' as http;
 
@@ -75,7 +75,6 @@ class _LoginState extends State<Login> {
 
     final response = await http.post(
       url,
-      // headers: headers,
       body: {
         'email': email,
         'password': password,
@@ -89,7 +88,7 @@ class _LoginState extends State<Login> {
         Navigator.pushNamed(context, '/list_rooms_user');
       }
     } else {
-      showDialog(
+      return showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Error servidor'),

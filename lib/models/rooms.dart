@@ -1,6 +1,5 @@
 class Room {
   final String roomId;
-  final String roomNumber;
   final String imageRoom;
   final String descriptionRoom;
   final String typeRoom;
@@ -10,7 +9,6 @@ class Room {
 
   Room({
     required this.roomId,
-    required this.roomNumber,
     required this.imageRoom,
     required this.descriptionRoom,
     required this.typeRoom,
@@ -22,7 +20,6 @@ class Room {
   factory Room.fromJson(Map<String, dynamic> json) {
     return Room(
       roomId: json['id'].toString(),
-      roomNumber: json['room_number'],
       typeRoom: json['room_type'],
       descriptionRoom: json['room_description'],
       capacityRoom: json['capacity'].toString(),

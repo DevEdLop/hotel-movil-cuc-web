@@ -1,8 +1,11 @@
-import 'package:hotel_movil_cuc/config/my_app_state.dart';
+import 'package:hotel_movil_cuc/config/config.dart';
+import 'package:hotel_movil_cuc/config/myAppState.dart';
 import 'package:hotel_movil_cuc/models/users.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:hotel_movil_cuc/models/rooms.dart';
+import 'package:intl/intl.dart';
+
 import 'package:http/http.dart' as http;
 
 class BookNow extends StatefulWidget {
@@ -17,7 +20,7 @@ class _BookNowState extends State<BookNow> {
   User? currentUserLogin;
   DateTime? selectedDate;
   DateTime? selectedDateini;
-  int numberOfNights = 1;
+  double totalPrice = 0.0;
 
   void cargarInfo(Room room) {
     print(room);
@@ -29,22 +32,7 @@ class _BookNowState extends State<BookNow> {
     });
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (picked != null) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
-  }
-
-  Future<void> _selectDateEntra(BuildContext context) async {
+  Future<void> _selectDateOut(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -59,9 +47,29 @@ class _BookNowState extends State<BookNow> {
     }
   }
 
+  Future<void> _selectDateIn(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
   int calculateNights(DateTime checkIn, DateTime checkOut) {
     final difference = checkOut.difference(checkIn);
     return difference.inDays.abs();
+  }
+
+  String formatDate(DateTime date) {
+    final formatter = DateFormat('yyyy-MM-dd');
+    return formatter.format(date);
   }
 
   double calculateTotalPrice() {
@@ -69,10 +77,76 @@ class _BookNowState extends State<BookNow> {
       final numberOfNights = calculateNights(selectedDateini!, selectedDate!);
       if (numberOfNights > 0) {
         final double price = double.parse(selectedRoom!.priceRoom);
-        return numberOfNights * price;
+        totalPrice = numberOfNights * price;
+        return totalPrice;
       }
     }
     return 0.0;
+  }
+
+  Future<void> createBook() async {
+    print("${Config.API_BASE}/bookings/create_booking");
+    final url = Uri.parse("${Config.API_BASE}/bookings/create_booking");
+
+    final body = {
+      'customer': currentUserLogin!.userId.toString(),
+      'room': selectedRoom!.roomId.toString(),
+      'check_in_date': formatDate(selectedDateini ?? DateTime.now()),
+      'check_out_date': formatDate(selectedDate ?? DateTime.now()),
+      'number_of_nights':
+          calculateNights(selectedDateini!, selectedDate!).toString(),
+      'total_price': totalPrice.toString()
+    };
+    print('GG => book creada');
+    print(body);
+    final response = await http.post(
+      url,
+      body: body,
+    );
+    print(response.statusCode);
+    if (response.statusCode == 201) {
+      print('call me negra');
+      print(response.statusCode == 201);
+      Navigator.pushNamed(context, '/list_bookings');
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error servidor'),
+          content: const Text('comuniquese con el administrador'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> validateCreateBooking() async {
+    if (selectedDateini == null || selectedDate == null) {
+      return showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Datos sin diligenciar'),
+          content: const Text('seleccione un rango de fecha'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      createBook();
+    }
   }
 
   @override
@@ -81,7 +155,7 @@ class _BookNowState extends State<BookNow> {
     if (arg != null) {
       cargarInfo(arg);
     } else {
-      // Handle the case where arguments are null
+      throw Exception('Error al cargar las Rooms');
     }
     return Scaffold(
         body: ListView(
@@ -119,17 +193,6 @@ class _BookNowState extends State<BookNow> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              const Text(
-                "Booking number:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              TextFormField(
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: "Enter booking number",
-                ),
-              ),
               const SizedBox(
                 height: 20,
               ),
@@ -138,7 +201,7 @@ class _BookNowState extends State<BookNow> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               TextButton(
-                onPressed: () => _selectDate(context),
+                onPressed: () => _selectDateIn(context),
                 child: InputDecorator(
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -163,7 +226,7 @@ class _BookNowState extends State<BookNow> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               TextButton(
-                onPressed: () => _selectDateEntra(context),
+                onPressed: () => _selectDateOut(context),
                 child: InputDecorator(
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -194,8 +257,10 @@ class _BookNowState extends State<BookNow> {
                   hintText: "0",
                 ),
                 controller: TextEditingController(
-                    text: calculateNights(selectedDateini!, selectedDate!)
-                        .toString()),
+                    text: (selectedDate != null && selectedDateini != null)
+                        ? calculateNights(selectedDateini!, selectedDate!)
+                            .toString()
+                        : '0'),
               ),
               const SizedBox(
                 height: 20,
@@ -227,7 +292,7 @@ class _BookNowState extends State<BookNow> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/editar_books');
+                        validateCreateBooking();
                       },
                       child: const Center(
                         child: Text(
@@ -242,7 +307,20 @@ class _BookNowState extends State<BookNow> {
                     ),
                   ),
                 ),
-              )
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Image.network(
+                'https://st3.idealista.com/news/archivos/styles/fullwidth_xl/public/2018-08/suite-princesse-grace-3.jpg?VersionId=4GORgqRZX0hbzXsr3j7zn8Dn580DRqLn&itok=hoDo8M8x', // Reemplaza esto con la URL de la imagen del hotel
+                width: double.infinity,
+                height:
+                    200, // Ajusta la altura de la imagen según tus necesidades
+                fit: BoxFit.cover,
+              ),
+              const SizedBox(
+                height: 20,
+              ),
             ],
           ),
         ),
