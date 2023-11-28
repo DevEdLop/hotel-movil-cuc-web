@@ -279,18 +279,16 @@ class _DetailScreenState extends State<DetailScreen> {
               fit: BoxFit.fitHeight,
             ),
           ),
-          const SizedBox(height: 16.0),
-          Text(
-            room.typeRoom,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 24.0,
-            ),
-          ),
           const SizedBox(height: 10.0),
-          Text(
-            room.descriptionRoom,
-            style: TextStyle(fontSize: 16.0),
+          Container(
+            margin:
+                EdgeInsets.only(left: 30.0, right: 16.0, top: 8.0, bottom: 8.0),
+            child: Text(
+              room.descriptionRoom,
+              style: TextStyle(
+                fontSize: 16.0,
+              ),
+            ),
           ),
           const SizedBox(height: 10.0),
           Text(
