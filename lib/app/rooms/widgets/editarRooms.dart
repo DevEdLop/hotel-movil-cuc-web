@@ -207,6 +207,7 @@ class _EditarRoomsState extends State<EditarRooms> {
                       TextField(
                         controller: descriptionRoomController,
                         maxLines: 5,
+                        textAlign: TextAlign.center,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter room description",

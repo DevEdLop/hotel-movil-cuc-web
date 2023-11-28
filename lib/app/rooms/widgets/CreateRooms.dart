@@ -191,6 +191,7 @@ class _CreateRoomsState extends State<CreateRooms> {
                       TextField(
                         controller: _descriptionRoomController,
                         maxLines: 5,
+                        textAlign: TextAlign.center, // Centrar el texto
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Enter room description",
