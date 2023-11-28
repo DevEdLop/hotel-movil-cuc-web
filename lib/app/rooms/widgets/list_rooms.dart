@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:hotel_movil_cuc/design/room_card.dart';
 import 'package:hotel_movil_cuc/models/rooms.dart';
 import 'package:hotel_movil_cuc/config/config.dart';
 import 'package:http/http.dart' as http;
@@ -12,7 +13,6 @@ class ListRooms extends StatefulWidget {
 }
 
 class _ListRoomsState extends State<ListRooms> {
-  late Future<List<Room>> listaProductos;
   List<Room> filteredHabitaciones = [];
   late TextEditingController _searchController;
   final List<Room> habitaciones = [];
@@ -20,7 +20,7 @@ class _ListRoomsState extends State<ListRooms> {
   @override
   void initState() {
     super.initState();
-    listaProductos = getRooms();
+    getRooms();
     _searchController = TextEditingController();
   }
 
@@ -41,93 +41,84 @@ class _ListRoomsState extends State<ListRooms> {
     return pd;
   }
 
-  /* Room(
-        title: 'Suite de Lujo',
-        description: 'Una suite elegante con vistas impresionantes.',
-        rating: '5 estrellas',
-        urlImage:
-            'https://st3.idealista.com/news/archivos/styles/fullwidth_xl/public/2018-08/suite-princesse-grace-3.jpg?VersionId=4GORgqRZX0hbzXsr3j7zn8Dn580DRqLn&itok=hoDo8M8x'),
-    Room(
-        title: 'Habitación Familiar',
-        description: 'Perfecta para una estancia en familia.',
-        rating: '4 estrellas',
-        urlImage:
-            'https://media.istockphoto.com/id/1209743499/es/foto/sonrisa-padres-e-hija-con-batas-blancas-pasando-la-ma%C3%B1ana-juntos-pap%C3%A1-y-el-ni%C3%B1o-est%C3%A1n-posando.jpg?s=612x612&w=0&k=20&c=-LWLKlw3C3ZEFW3vXvMH3PiYcmSjzqHTsVoZU3RLypg='),
-    Room(
-        title: 'Habitación Temática',
-        description: 'Una experiencia única con decoración temática.',
-        rating: '4.5 estrellas',
-        urlImage:
-            'https://i.pinimg.com/736x/0b/57/cd/0b57cd8a9885c14cac1cf714e2771658.jpg'),
-    Room(
-        title: 'Habitación Ejecutiva',
-        description:
-            'Ideal para viajes de negocios con comodidades ejecutivas.',
-        rating: '4 estrellas',
-        urlImage:
-            'https://www.windsortower.com/wp-content/uploads/2015/04/DSC_7859.jpg'),
-    Room(
-        title: 'Suite Presidencial',
-        description: 'La mejor habitación con servicios exclusivos.',
-        rating: '5 estrellas',
-        urlImage: 'https://s3.amazonaws.com/stati c-webstudio-accorhotels-usa-1.wp-ha.fastbooking.com/wp-content/uploads/sites/19/2022/01/06233739/DUF_7039-v-ok-1170x780.jpg'),
- */
+  Future<void> outApp() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Salir'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('¿Está seguro de que desea salir de la app?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Salir'),
+              onPressed: () {
+                Navigator.pushNamed(context, '/');
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(
+                Icons.exit_to_app,
+                color: Color.fromARGB(255, 0, 0, 0),
+                size: 35,
+              ),
+              onPressed: () {
+                outApp();
+              },
+            );
+          },
+        ),
+        title: const Text(
+          "Listado de Habitaciones",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 20.0),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/create_rooms_adm');
+              },
+              child: Icon(
+                Icons.add_home_work_rounded,
+                color: Colors.lightBlue[300],
+                size: 30,
+              ),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 22, left: 05, right: 10),
-            child: Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                    elevation: 0,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Color.fromARGB(255, 0, 0, 0),
-                    size: 35,
-                  ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                const Text(
-                  "Listado de Habitaciones",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 05, right: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/create_rooms_adm');
-                  },
-                  icon: const Icon(Icons.add),
-                  tooltip: 'Agregar',
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-              ],
-            ),
-          ),
-          Padding(
             padding: const EdgeInsets.only(left: 05, right: 10),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 58),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 color: const Color.fromARGB(255, 255, 255, 255),
@@ -165,68 +156,12 @@ class _ListRoomsState extends State<ListRooms> {
                     itemBuilder: (context, index) {
                       return RoomCard(
                         room: filteredHabitaciones[index],
+                        ruta: '/detail',
                       );
                     },
                   ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class RoomCard extends StatelessWidget {
-  final Room room;
-
-  const RoomCard({
-    Key? key,
-    required this.room,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 5.0,
-      margin: const EdgeInsets.all(20.0),
-      child: InkWell(
-        onTap: () {
-          Navigator.pushNamed(context, '/detail', arguments: room);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                room.typeRoom,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24.0,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              Hero(
-                  tag: 'roomUrlImage${room.imageRoom}',
-                  child: Image.network(room.imageRoom)),
-              const SizedBox(height: 10.0),
-              Text(
-                room.descriptionRoom,
-                style: const TextStyle(fontSize: 16.0),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10.0),
-              Text(
-                "capacidad: ${room.capacityRoom} persona(s)",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.0,
-                  color: Colors.blue,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -328,41 +263,52 @@ class _DetailScreenState extends State<DetailScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Hero(
-                tag: 'roomTitle${room.typeRoom}',
-                child: Image.network(room.imageRoom)),
-            const SizedBox(height: 10.0),
-            Text(
-              room.descriptionRoom,
-              style: const TextStyle(fontSize: 16.0),
-              textAlign: TextAlign.center,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Hero(
+            tag: 'roomUrlImage${room.imageRoom}',
+            child: Image.network(
+              room.imageRoom,
+              height: 250.0,
+              width: double.infinity,
+              fit: BoxFit.fitHeight,
             ),
-            const SizedBox(height: 10.0),
-            Text(
-              "capacidad: ${room.capacityRoom} persona(s)",
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18.0,
-                color: Colors.blue,
-              ),
-              textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16.0),
+          Text(
+            room.typeRoom,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 24.0,
             ),
-            const SizedBox(height: 10.0),
-            Text(
-              "Precio por noche: ${room.priceRoom}",
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 18.0,
-              ),
-              textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10.0),
+          Text(
+            room.descriptionRoom,
+            style: TextStyle(fontSize: 16.0),
+          ),
+          const SizedBox(height: 10.0),
+          Text(
+            "Capacidad: ${room.capacityRoom} persona(s)",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18.0,
+              color: Colors.cyan[900],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10.0),
+          Text(
+            room.isAvailable ? 'Disponible' : 'No Disponible',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18.0,
+              color: room.isAvailable
+                  ? Colors.greenAccent[400]
+                  : Colors.redAccent[400],
+            ),
+          ),
+        ],
       ),
     );
   }

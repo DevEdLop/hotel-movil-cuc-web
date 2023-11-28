@@ -1,7 +1,8 @@
 import 'dart:convert';
-
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:hotel_movil_cuc/config/config.dart';
+import 'package:hotel_movil_cuc/config/my_app_state.dart';
 import 'package:hotel_movil_cuc/models/users.dart';
 import 'package:http/http.dart' as http;
 
@@ -25,48 +26,25 @@ class _LoginState extends State<Login> {
   Future<void> fetchData() async {
     print("${Config.API_BASE}/users");
     final response = await http.get(Uri.parse("${Config.API_BASE}/users"));
+    final items = json.decode(response.body).cast<Map<String, dynamic>>();
+
+    List<User> user = items.map<User>((json) {
+      return User.fromJson(json);
+    }).toList();
+
+    print(user);
     print(response.statusCode);
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
       setState(() {
-        userList = data.map((user) => User.fromJson(user)).toList();
+        userList.addAll(user);
       });
     } else {
-      throw Exception('Error al cargar la lista de usuarios');
-    }
-  }
-
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  Future<void> login() async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
-
-    print("${Config.API_BASE}/users/login");
-    final url = Uri.parse("${Config.API_BASE}/users/login");
-    print('GG');
-    final response = await http.post(
-      url,
-      // headers: headers,
-      body: {
-        'email': email,
-        'password': password,
-      },
-    );
-    print(response.statusCode);
-
-    User? currentUser = userList.firstWhere((user) => user.email == email);
-    print('Is admin');
-    print(currentUser.isAdmin);
-
-    if (email.isEmpty || password.isEmpty) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Datos sin diligenciar'),
+          title: const Text('Error servidor'),
           content: const Text(
-              'No se puede ingresar sin llenar los campos de email address y password.'),
+              'Error al cargar la lista de usuarios comuniquese con el administrador'),
           actions: <Widget>[
             ElevatedButton(
               onPressed: () {
@@ -77,7 +55,34 @@ class _LoginState extends State<Login> {
           ],
         ),
       );
-    } else if (response.statusCode == 200) {
+    }
+  }
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  Future<void> login(String email, String password) async {
+    User? currentUser = userList.firstWhere((user) => user.email == email);
+    print('Is admin');
+    print(currentUser.isAdmin);
+    print(context);
+    Provider.of<MyAppStateUser>(context, listen: false)
+        .setArgumentos(currentUser);
+
+    print("${Config.API_BASE}/users/login");
+    final url = Uri.parse("${Config.API_BASE}/users/login");
+    print('GG');
+
+    final response = await http.post(
+      url,
+      // headers: headers,
+      body: {
+        'email': email,
+        'password': password,
+      },
+    );
+    print(response.statusCode);
+    if (response.statusCode == 200) {
       if (currentUser.isAdmin) {
         Navigator.pushNamed(context, '/list_rooms_adm');
       } else {
@@ -100,6 +105,32 @@ class _LoginState extends State<Login> {
           ],
         ),
       );
+    }
+  }
+
+  Future<void> validatelogin() async {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Datos sin diligenciar'),
+          content: const Text(
+              'No se puede ingresar sin llenar los campos de email address y password.'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      login(email, password);
     }
   }
 
@@ -200,7 +231,7 @@ class _LoginState extends State<Login> {
                           ),
                           child: TextButton(
                             onPressed: () {
-                              login();
+                              validatelogin();
                             },
                             child: const Center(
                               child: Text(

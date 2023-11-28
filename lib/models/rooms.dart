@@ -6,7 +6,7 @@ class Room {
   final String typeRoom;
   final String capacityRoom;
   final String priceRoom;
-  // Agrega más campos según tu modelo Django
+  final bool isAvailable;
 
   Room({
     required this.roomId,
@@ -16,7 +16,7 @@ class Room {
     required this.typeRoom,
     required this.capacityRoom,
     required this.priceRoom,
-    // Incluye más campos aquí
+    required this.isAvailable,
   });
 
   factory Room.fromJson(Map<String, dynamic> json) {
@@ -27,9 +27,9 @@ class Room {
       descriptionRoom: json['room_description'],
       capacityRoom: json['capacity'].toString(),
       priceRoom: json['price'],
+      isAvailable: json['is_available'],
       imageRoom:
           'https://st3.idealista.com/news/archivos/styles/fullwidth_xl/public/2018-08/suite-princesse-grace-3.jpg?VersionId=4GORgqRZX0hbzXsr3j7zn8Dn580DRqLn&itok=hoDo8M8x',
-      // Incluye más campos aquí según tu modelo Django
     );
   }
 }

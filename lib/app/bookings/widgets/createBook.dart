@@ -1,4 +1,9 @@
+import 'package:hotel_movil_cuc/config/my_app_state.dart';
+import 'package:hotel_movil_cuc/models/users.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:hotel_movil_cuc/models/rooms.dart';
+import 'package:http/http.dart' as http;
 
 class BookNow extends StatefulWidget {
   const BookNow({Key? key}) : super(key: key);
@@ -8,10 +13,21 @@ class BookNow extends StatefulWidget {
 }
 
 class _BookNowState extends State<BookNow> {
-  bool isChecked = false;
+  Room? selectedRoom;
+  User? currentUserLogin;
   DateTime? selectedDate;
   DateTime? selectedDateini;
   int numberOfNights = 1;
+
+  void cargarInfo(Room room) {
+    print(room);
+    print('runnebale');
+    final currentUser = Provider.of<MyAppStateUser>(context).currentUser;
+    setState(() {
+      selectedRoom = room;
+      currentUserLogin = currentUser;
+    });
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -21,7 +37,7 @@ class _BookNowState extends State<BookNow> {
       lastDate: DateTime(2101),
     );
 
-    if (picked != null && picked != selectedDate) {
+    if (picked != null) {
       setState(() {
         selectedDate = picked;
       });
@@ -36,15 +52,37 @@ class _BookNowState extends State<BookNow> {
       lastDate: DateTime(2101),
     );
 
-    if (picked != null && picked != selectedDateini) {
+    if (picked != null) {
       setState(() {
         selectedDateini = picked;
       });
     }
   }
 
+  int calculateNights(DateTime checkIn, DateTime checkOut) {
+    final difference = checkOut.difference(checkIn);
+    return difference.inDays.abs();
+  }
+
+  double calculateTotalPrice() {
+    if (selectedDate != null && selectedDateini != null) {
+      final numberOfNights = calculateNights(selectedDateini!, selectedDate!);
+      if (numberOfNights > 0) {
+        final double price = double.parse(selectedRoom!.priceRoom);
+        return numberOfNights * price;
+      }
+    }
+    return 0.0;
+  }
+
   @override
   Widget build(BuildContext context) {
+    Room? arg = ModalRoute.of(context)?.settings.arguments as Room?;
+    if (arg != null) {
+      cargarInfo(arg);
+    } else {
+      // Handle the case where arguments are null
+    }
     return Scaffold(
         body: ListView(
       children: [
@@ -100,7 +138,7 @@ class _BookNowState extends State<BookNow> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               TextButton(
-                onPressed: () => _selectDateEntra(context),
+                onPressed: () => _selectDate(context),
                 child: InputDecorator(
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -125,7 +163,7 @@ class _BookNowState extends State<BookNow> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               TextButton(
-                onPressed: () => _selectDate(context),
+                onPressed: () => _selectDateEntra(context),
                 child: InputDecorator(
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -155,6 +193,9 @@ class _BookNowState extends State<BookNow> {
                   border: InputBorder.none,
                   hintText: "0",
                 ),
+                controller: TextEditingController(
+                    text: calculateNights(selectedDateini!, selectedDate!)
+                        .toString()),
               ),
               const SizedBox(
                 height: 20,
@@ -169,6 +210,8 @@ class _BookNowState extends State<BookNow> {
                   border: InputBorder.none,
                   hintText: "0",
                 ),
+                controller: TextEditingController(
+                    text: calculateTotalPrice().toString()),
               ),
               Center(
                 child: Padding(
